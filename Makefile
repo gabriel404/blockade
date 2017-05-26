@@ -1,7 +1,7 @@
 CC=gcc
 CXX=g++
 RM=rm -f
-LDLIBS= -lsfml-graphics -lsfml-window -lsfml-system -lGL -lGLEW
+LDLIBS= -lglfw -lGLEW -lGL 
 
 SRCS= $(wildcard *.cpp)
 OBJS=$(subst .cc,.o,$(SRCS))
