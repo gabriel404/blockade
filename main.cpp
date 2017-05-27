@@ -57,9 +57,9 @@ int main()
 	}
 	//end glew initializer
 
-	int wWidth, wHeight;
-	glfwGetFramebufferSize(window, &wWidth, &wHeight);
-	glViewport(0, 0, wWidth, wHeight);
+	int w_Width, w_Height;
+	glfwGetFramebufferSize(window, &w_Width, &w_Height);
+	glViewport(0, 0, w_Width, w_Height);
 	
 	//shaderProgram is the vertex and fragment shader compiled
 	GLuint shaderProgram = LoadShader("vertexShader.vert", "fragmentShader.frag");
