@@ -6,6 +6,7 @@
 #include <GLFW/glfw3.h>
 
 #include "shader.h"
+#include "bmploader.h"
 
 //key handler
 static void key_callback(GLFWwindow *window, int key, int scancode, int action, int mods)
@@ -63,15 +64,15 @@ int main()
 	
 	//shaderProgram is the vertex and fragment shader compiled
 	GLuint shaderProgram = LoadShader("vertexShader.vert", "fragmentShader.frag");
-
-	GLfloat vertices[] = {
-    // Positions          // Colors            
-	   0.5f,  0.5f, 0.0f,  //0.0f, 1.0f, 0.0f,
-	   0.5f, -0.5f, 0.0f,  //1.0f, 1.0f, 0.0f, 
-	  -0.5f, -0.5f, 0.0f,  //0.0f, 0.0f, 1.0f
-	  -0.5f,  0.5f, 0.0f,  //1.0f, 0.0f, 0.0f,
-	};
 	
+    GLfloat vertices[] = {
+        // Positions          // Colors           // Texture Coords
+         0.5f,  0.5f, 0.0f,   1.0f, 0.0f, 0.0f,   1.0f, 1.0f, // Top Right
+         0.5f, -0.5f, 0.0f,   0.0f, 1.0f, 0.0f,   1.0f, 0.0f, // Bottom Right
+        -0.5f, -0.5f, 0.0f,   0.0f, 0.0f, 1.0f,   0.0f, 0.0f, // Bottom Left
+        -0.5f,  0.5f, 0.0f,   1.0f, 1.0f, 0.0f,   0.0f, 1.0f  // Top Left 
+    };
+
 	//end triangle vertices
 	GLuint indices[] = { //defines the order in which we are gonna draw the triangles
 		0, 1, 3, //first triangle
@@ -79,11 +80,12 @@ int main()
 	};
 
 	/* GLfloat texCoords[] = { */
-	/* 	0.0f, 0.0f, */
 	/* 	1.0f, 0.0f, */
-	/* 	0.5f, 1.0f */
+	/* 	0.5f, 1.0f, */
+	/* 	0.0f, 0.0f */
 	/* }; */
 
+	//load texture
 	
 	//VBO = Vertex Buffer Object
 	//VAO = Vertex Array Object
@@ -108,19 +110,44 @@ int main()
 	glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, EBO);
 	glBufferData(GL_ELEMENT_ARRAY_BUFFER, sizeof(indices), indices, GL_STATIC_DRAW);
 
+
 	//Position Attribute
-	glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 3 * sizeof(GLfloat), (GLvoid*)0);
+	glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 8 * sizeof(GLfloat), (GLvoid*)0);
 	glEnableVertexAttribArray(0); 
 
 	//Color Attribute
-	/* glVertexAttribPointer(1, 3, GL_FLOAT, GL_FALSE, 6 * sizeof(GLfloat), (GLvoid*)(3 * sizeof(float))); */
-	/* glEnableVertexAttribArray(1); */
+	glVertexAttribPointer(1, 3, GL_FLOAT, GL_FALSE, 8 * sizeof(GLfloat), (GLvoid*)(3 * sizeof(GLfloat)));
+	glEnableVertexAttribArray(1);
 
-	glBindBuffer(GL_ARRAY_BUFFER, 0); // Note that this is allowed, the call to glVertexAttribPointer registered VBO as the currently bound vertex buffer object so afterwards we can safely unbind
-	
+	//Texture Attribute
+	glVertexAttribPointer(2, 2, GL_FLOAT, GL_FALSE, 8 * sizeof(GLfloat), (GLvoid*)(6 * sizeof(GLfloat)));
+	glEnableVertexAttribArray(2);
+
 	glBindVertexArray(0); // Unbind VAO (it's always a good thing to unbind any buffer/array to prevent strange bugs), remember: do NOT unbind the EBO, keep it bound to this VAO
 	
+	//load image
+    BMP info = BMP("wall.bmp");
+
+	//create texture
+    GLuint texture;
+    glGenTextures(1, &texture);
+    glBindTexture(GL_TEXTURE_2D, texture); //all upcomingo GL_TEXTURE_2D will have effect on this object
+
 	
+	//define image texture style
+	//first 2 sets the image S and T to MIRRORED REPEAT
+	//the third sets the filter to NEAREST instead of LINEAR
+	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_REPEAT);
+	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_REPEAT);
+	//define mipmap texture
+	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
+	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
+
+    glTexImage2D(GL_TEXTURE_2D, 0, info.HasAlphaChannel() ? GL_RGBA : GL_RGB, info.GetWidth(), info.GetWidth(), 0, info.HasAlphaChannel() ? GL_BGRA : GL_BGR, GL_UNSIGNED_BYTE, info.GetPixels().data());
+
+	glGenerateMipmap(GL_TEXTURE_2D);
+	glBindTexture(GL_TEXTURE_2D, 0);
+
 	//main game loop
 	while(!glfwWindowShouldClose(window))
 	{
@@ -142,6 +169,7 @@ int main()
 
 		/* glUniform1f(glGetUniformLocation(shaderProgram, "aloha"), 0.4f); */
 
+		glBindTexture(GL_TEXTURE_2D, texture);
 		glUseProgram(shaderProgram);
 		glBindVertexArray(VAO); //bind VAO again
 		/* glDrawArrays(GL_TRIANGLES, 0, 3); */
@@ -153,6 +181,7 @@ int main()
 	//end main game loop
 	glDeleteVertexArrays(1, &VAO);
 	glDeleteBuffers(1, &VBO);
+	glDeleteBuffers(1, &EBO);
 	glfwTerminate();
 	return 0;
 }
