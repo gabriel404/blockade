@@ -16,6 +16,7 @@ void LoadTexture(GLuint &texture,const char* filePath, std::string ext)
     unsigned char *data = stbi_load(filePath, &width, &height, &nrChannels, 0);
     if (data)
     {
+		//Check file extension
 		if(ext == "PNG"){glTexImage2D(GL_TEXTURE_2D, 0, GL_RGB, width, height, 0, GL_RGBA, GL_UNSIGNED_BYTE, data);}
 		if(ext == "JPG"){glTexImage2D(GL_TEXTURE_2D, 0, GL_RGB, width, height, 0, GL_RGB, GL_UNSIGNED_BYTE, data);}
         
