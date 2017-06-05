@@ -64,7 +64,7 @@ GLuint LoadShader(const char *vertex_path, const char *fragment_path) {
     std::cout << &fragShaderError[0] << std::endl;
 
     std::cout << "Linking shaderProgram" << std::endl;
-    GLuint shaderProgram = glCreateProgram();
+	GLuint shaderProgram = glCreateProgram();
     glAttachShader(shaderProgram, vertShader);
     glAttachShader(shaderProgram, fragShader);
     glLinkProgram(shaderProgram);

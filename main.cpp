@@ -9,6 +9,7 @@
 #include "loaders/shader.h"
 #include "loaders/bmploader.h"
 #include "loaders/stb_image.h"
+#include "texture.h"
 
 //key handler
 static void key_callback(GLFWwindow *window, int key, int scancode, int action, int mods)
@@ -81,12 +82,6 @@ int main()
 		1, 2, 3 //second 
 	};
 
-	/* GLfloat texCoords[] = { */
-	/* 	1.0f, 0.0f, */
-	/* 	0.5f, 1.0f, */
-	/* 	0.0f, 0.0f */
-	/* }; */
-
 	//load texture
 	
 	//VBO = Vertex Buffer Object
@@ -127,32 +122,15 @@ int main()
 	glVertexAttribPointer(2, 2, GL_FLOAT, GL_FALSE, attrN * sizeof(GLfloat), (GLvoid*)(6 * sizeof(GLfloat)));
 	glEnableVertexAttribArray(2);
 
-	glBindVertexArray(0); // Unbind VAO (it's always a good thing to unbind any buffer/array to prevent strange bugs), remember: do NOT unbind the EBO, keep it bound to this VAO
-	
+	unsigned int texture1, texture2;
 
-	//create texture
-    GLuint texture;
-    glGenTextures(1, &texture);
-    glBindTexture(GL_TEXTURE_2D, texture); //all upcomingo GL_TEXTURE_2D will have effect on this object
+	LoadTexture(texture1, "resources/wall.jpg", "JPG");
+	LoadTexture(texture2, "resources/seta.png", "PNG");
 
-	//load image
-	int width, height, nrChannels;
-	unsigned char *image = stbi_load("resources/wall.jpg", &width, &height, &nrChannels, 0);
-	
-	//define image texture style
-	//first 2 sets the image S and T to MIRRORED REPEAT
-	//the third sets the filter to NEAREST instead of LINEAR
-	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_REPEAT);
-	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_REPEAT);
-	//define mipmap texture
-	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
-	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
+	glUseProgram(shaderProgram);
+	glUniform1i(glGetUniformLocation(shaderProgram, "texture1"), 0);
+	glUniform1i(glGetUniformLocation(shaderProgram, "texture2"), 1);
 
-	/* glTexImage2D(GL_TEXTURE_2D, 0, info.HasAlphaChannel() ? GL_RGBA : GL_RGB, info.GetWidth(), info.GetWidth(), 0, info.HasAlphaChannel() ? GL_BGRA : GL_BGR, GL_UNSIGNED_BYTE, info.GetPixels().data()); */
-	glTexImage2D(GL_TEXTURE_2D, 0, GL_RGB, width, height, 0, GL_RGB, GL_UNSIGNED_BYTE, image);
-
-	glGenerateMipmap(GL_TEXTURE_2D);
-	glBindTexture(GL_TEXTURE_2D, 0);
 
 	//main game loop
 	while(!glfwWindowShouldClose(window))
@@ -175,8 +153,13 @@ int main()
 
 		/* glUniform1f(glGetUniformLocation(shaderProgram, "aloha"), 0.4f); */
 
-		glBindTexture(GL_TEXTURE_2D, texture);
+		glActiveTexture(GL_TEXTURE0);
+		glBindTexture(GL_TEXTURE_2D, texture1);
+		glActiveTexture(GL_TEXTURE1);
+		glBindTexture(GL_TEXTURE_2D, texture2);
+
 		glUseProgram(shaderProgram);
+
 		glBindVertexArray(VAO); //bind VAO again
 		/* glDrawArrays(GL_TRIANGLES, 0, 3); */
 		glDrawElements(GL_TRIANGLES, 6, GL_UNSIGNED_INT, 0);
