@@ -1,13 +1,14 @@
 #include <iostream>
 
+//OpenGL
 #define GLEW_STATIC
 #include <GL/glew.h>
-
 #include <GLFW/glfw3.h>
 
-#include "shader.h"
-#include "bmploader.h"
-#include "lodepng/lodepng.h"
+//file loaders
+#include "loaders/shader.h"
+#include "loaders/bmploader.h"
+#include "loaders/stb_image.h"
 
 //key handler
 static void key_callback(GLFWwindow *window, int key, int scancode, int action, int mods)
@@ -64,7 +65,7 @@ int main()
 	glViewport(0, 0, w_Width, w_Height);
 	
 	//shaderProgram is the vertex and fragment shader compiled
-	GLuint shaderProgram = LoadShader("vertexShader.vert", "fragmentShader.frag");
+	GLuint shaderProgram = LoadShader("shaders/vertexShader.vert", "shaders/fragmentShader.frag");
 	
     GLfloat vertices[] = {
         // Positions          // Colors           // Texture Coords
@@ -128,18 +129,15 @@ int main()
 
 	glBindVertexArray(0); // Unbind VAO (it's always a good thing to unbind any buffer/array to prevent strange bugs), remember: do NOT unbind the EBO, keep it bound to this VAO
 	
-	//load image
-    /* BMP info = BMP("wall.bmp"); */
-	std::string filename = "wall.png";
-	std::vector<unsigned char> image;
-	unsigned width, height;
-	unsigned error = lodepng::decode(image, width, height, filename);
 
 	//create texture
     GLuint texture;
     glGenTextures(1, &texture);
     glBindTexture(GL_TEXTURE_2D, texture); //all upcomingo GL_TEXTURE_2D will have effect on this object
 
+	//load image
+	int width, height, nrChannels;
+	unsigned char *image = stbi_load("resources/wall.jpg", &width, &height, &nrChannels, 0);
 	
 	//define image texture style
 	//first 2 sets the image S and T to MIRRORED REPEAT
@@ -150,8 +148,8 @@ int main()
 	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
 	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
 
-    /* glTexImage2D(GL_TEXTURE_2D, 0, info.HasAlphaChannel() ? GL_RGBA : GL_RGB, info.GetWidth(), info.GetWidth(), 0, info.HasAlphaChannel() ? GL_BGRA : GL_BGR, GL_UNSIGNED_BYTE, info.GetPixels().data()); */
-	glTexImage2D(GL_TEXTURE_2D, GL_RGB, width, height, 0, GL_RGB, GL_UNSIGNED_BYTE, image);
+	/* glTexImage2D(GL_TEXTURE_2D, 0, info.HasAlphaChannel() ? GL_RGBA : GL_RGB, info.GetWidth(), info.GetWidth(), 0, info.HasAlphaChannel() ? GL_BGRA : GL_BGR, GL_UNSIGNED_BYTE, info.GetPixels().data()); */
+	glTexImage2D(GL_TEXTURE_2D, 0, GL_RGB, width, height, 0, GL_RGB, GL_UNSIGNED_BYTE, image);
 
 	glGenerateMipmap(GL_TEXTURE_2D);
 	glBindTexture(GL_TEXTURE_2D, 0);

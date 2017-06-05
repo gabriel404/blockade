@@ -3,7 +3,7 @@ CXX=g++
 RM=rm -f
 LDLIBS= -lglfw -lGLEW -lGL 
 
-SRCS= $(wildcard *.cpp)
+SRCS= $(wildcard *.cpp) $(wildcard loaders/*.cpp)
 OBJS=$(subst .cc,.o,$(SRCS))
 
 all: jogo
